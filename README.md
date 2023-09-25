@@ -9,14 +9,15 @@ Within the same repo I've also included a server.dat creator, which takes a .txt
 You can then replace your servers.dat file with the generated .dat file in your .minecraft folder. It's fast. You can add tens of thousands of servers to your minecraft server list if you wanted. 
 
 ## Build instructions
+This project uses `cmake` to build.
+To build this project from source, clone this repo and then execute the following commands inside the directory:
+```shell
+mkdir build && cd build
+cmake ..
+make
+```
 
-### Linux
-1. Clone the repo.
-2. Make sure `gcc` (g++), `boost`, and `fmt` (libfmt) are installed for C++. I trust you to figure out how to do this on your specific distro.
-3. Run the `build` shell script in this repo to build the crawler and the mass server list adder at the same time.
-
-### Windows
-Since this project is cross-platform and there is no particular build system, you can run this project on windows in many ways...
-You can clone the repo and change the `build` script.
-Or if you use Visual Studio, make sure you install the required dependencies with a package manager like vcpkg.
-Otherwise, you can probably just use MinGW and run from bash shell. 
+You can also run the included `build.py` script with python to do the exact same as above, but automatically.
+```shell
+python build.py
+```
