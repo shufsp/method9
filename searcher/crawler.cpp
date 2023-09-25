@@ -67,12 +67,12 @@ void jehovas_witness(const std::unordered_set<std::string>& ips)
     // set up our crawler
     int crawlers_done = 0;
     std::vector<std::string> valid_servers;
-    std::atomic<int> tasks_completed(0);
 
     // lambda function that each thread will run
     const auto crawler = [&](const std::string& ip)
     {
         // Port we're going to check
+        // TODO add ability to portscan a single ip, perhaps in a different method
         constexpr unsigned short MC_PORT = 25565;
 
         // Knock on the port's door (check if the port is open to the public)
@@ -87,9 +87,8 @@ void jehovas_witness(const std::unordered_set<std::string>& ips)
             // server did not respond within the given timeout, or port is closed on this ip address.
             // TODO options to adjust timeout
             std::lock_guard<std::mutex> print_lock(print_mut);  // so we can print from multiple threads
-            fmt::print("Scanning {} ... ({} / {})              \r", ip, ++crawlers_done, IP_COUNT);
+            fmt::print("Scanning {} ... ({} / {})                        \r", ip, ++crawlers_done, IP_COUNT);
         }
-        tasks_completed.fetch_add(1, std::memory_order_relaxed);
     };
 
     // start scanning
@@ -131,6 +130,8 @@ std::vector<int> create_offset_range(int center, int range)
 
 int main(int argc, char** argv)
 {
+    // TODO proper arg flags
+
     // no args given
    if (argc == 1)
    {

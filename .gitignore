@@ -1,3 +1,7 @@
 server-crawler
 server-dat-creator
 .idea
+cmake-build-debug
+venv
+build
+README.md

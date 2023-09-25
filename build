@@ -1,4 +1,0 @@
-#!/bin/sh
-
-g++ searcher/crawler.cpp searcher/crawler_network.cpp -lfmt -lboost_system -lboost_regex -o server-crawler -std=c++20
-g++ nbt/nbt_create.cpp nbt/nbt_adapt.cpp nbt/NBTWriter.cpp -lfmt -o server-dat-creator -std=c++20
