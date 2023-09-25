@@ -9,8 +9,16 @@ Within the same repo I've also included a server.dat creator, which takes a .txt
 You can then replace your servers.dat file with the generated .dat file in your .minecraft folder. It's fast. You can add tens of thousands of servers to your minecraft server list if you wanted. 
 
 ## Build instructions
-This project uses `cmake` to build.
-To build this project from source, clone this repo and then execute the following commands inside the directory:
+This project uses `cmake` to build. Before running cmake, make sure you've installed the required dependencies for this project:
+- boost (v1.83.0)
+- fmt (v10.1.0)
+  
+**Linux:** Install cmake, boost, and fmt using your distro's package manager.
+  
+**Windows:** Load the cmake project with Visual Studio and use a package manager like vcpkg to install these dependencies. You can also bypass cmake or visual studio and compile directly with MinGW
+<br><br/>
+
+Clone this repo and then execute the following commands inside the directory:
 ```shell
 mkdir build && cd build
 cmake ..
