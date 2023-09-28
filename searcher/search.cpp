@@ -51,9 +51,16 @@ std::unordered_set<std::string> jehovas_generate(const ip_parts& origin_ip, cons
     return ips;
 }
 
-// Given a unique set of ip address strings, we summon some threads to check which ips in the set are ONLINE
-// The default port checked is minecraft's port 25565, TODO plans to have port scanning in the future
-void jehovas_witness(const std::unordered_set<std::string>& ips)
+
+// Given an IP, we vertically scan, scanning all ports in a single ip (port scanner)
+void crawl_vertical(const std::string_view ip)
+{
+
+}
+
+// Given a unique set of ip address strings without their ports, we summon some threads to check which ips in the set are ONLINE
+// The default port checked is minecraft's port 25565.
+void crawl_horizontal(const std::unordered_set<std::string>& ips)
 {
     // mutexes, since we are going to use a thread pool
     std::mutex print_mut;
@@ -62,7 +69,7 @@ void jehovas_witness(const std::unordered_set<std::string>& ips)
     // prepare our jehovas witness force (thread pool)
     // you can adjust the threads higher than 100 if you want. just dont blow up your computer.,..,
     const auto IP_COUNT = ips.size();
-    boost::asio::thread_pool pool(100);
+    boost::asio::thread_pool pool(200);
 
     // set up our crawler
     int crawlers_done = 0;
@@ -76,7 +83,7 @@ void jehovas_witness(const std::unordered_set<std::string>& ips)
         constexpr unsigned short MC_PORT = 25565;
 
         // Knock on the port's door (check if the port is open to the public)
-        bool they_answered = ip_tcp_is_open(ip.data(), MC_PORT, 1000);
+        bool they_answered = ip_tcp_is_open(ip.data(), MC_PORT, 500);
         if (they_answered)
         {
             // the port is open! It's MOST LIKELY a running minecraft server
@@ -120,11 +127,20 @@ void jehovas_witness(const std::unordered_set<std::string>& ips)
 }
 
 // If center is 0 and range is 3, this will return { -3, -2, -1, 0, 1, 2, 3 }
-std::vector<int> create_offset_range(int center, int range) 
+inline std::vector<int> create_offset_range(int center, int range)
 {
     std::vector<int> result;
     for (int i = -range; i <= range; ++i) 
         result.push_back(center + i);
+    return result;
+}
+
+// Creates a range [0, range]
+std::vector<int> create_offset_range_unsigned(size_t range)
+{
+    std::vector<int> result;
+    for (int i = 0; i < range; ++i)
+        result.push_back(i);
     return result;
 }
 
@@ -158,13 +174,13 @@ int main(int argc, char** argv)
        const auto ip_addr = ip_str_to_parts(ip);
 
        // create the neighbor offsets to check
-       const auto ip_offsets = create_offset_range(0, offset);
+       const auto ip_offsets = create_offset_range_unsigned(offset);
 
        // generate the ips to check with our offsets
        const auto ips = jehovas_generate(ip_addr, ip_offsets); 
 
        // Crawl.
-       jehovas_witness(ips);
+       crawl_horizontal(ips);
    }
    catch (std::exception& ex)
    {
