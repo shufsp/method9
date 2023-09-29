@@ -8,7 +8,7 @@ Scan neighboring IP addresses from a given starting point with any given range. 
 Within the same repo I've also included a server.dat creator, which takes a .txt list of IPS (one IP per line) and turns it into a valid NBT file that minecraft can read.
 You can then replace your servers.dat file with the generated .dat file in your .minecraft folder. It's fast. You can add tens of thousands of servers to your minecraft server list if you wanted. 
 
-## Usage
+## Server Crawler Usage
 ### Arguments
 ```
   --help                                        produce help message
