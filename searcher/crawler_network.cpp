@@ -10,7 +10,7 @@
 #include <fstream>
 
 // Checks if the given IP's port is open to TCP connections
-bool ip_tcp_is_open(const std::string_view ip, const unsigned short port, const int timeout_ms)
+bool ip_tcp_is_open(const std::string_view ip, const unsigned short port, const size_t timeout_ms)
 {
     // set up our socket
     boost::asio::io_service io_service;
@@ -73,11 +73,11 @@ ip_parts ip_neighbor(ip_parts addr, const int neighbor_offset, const int node)
 
 // Given a unique set of ip address strings without their ports, we summon some threads to check which ips in the set are ONLINE
 // The default port checked is minecraft's port 25565.
-std::vector<minecraft_server> ip_crawl_horizontal(const std::unordered_set<std::string>& ips, const std::vector<unsigned short>& ports)
+std::vector<minecraft_server> ip_crawl_horizontal(const std::unordered_set<std::string>& ips, const std::vector<unsigned short>& ports, const size_t threads, const size_t connection_timeout_ms, const size_t read_timeout_ms)
 {
     // prepare our jehovas witness force (thread pool)
-    // you can adjust the threads higher than 100 if you want. just dont blow up your computer.,..,
-    boost::asio::thread_pool pool(200);
+    // you can adjust the threads higher than 100 if you want. just don't blow up your computer.,..,
+    boost::asio::thread_pool pool(threads);
 
     std::mutex print_mutex;
 
@@ -86,6 +86,7 @@ std::vector<minecraft_server> ip_crawl_horizontal(const std::unordered_set<std::
 
     std::mutex scanned_servers_count_mutex;
     size_t scanned_servers_count = 0;
+
 
     // start scanning
     fmt::print("Mounting crawlers ... \n");
@@ -98,7 +99,7 @@ std::vector<minecraft_server> ip_crawl_horizontal(const std::unordered_set<std::
                 [&, Func = ip_tcp_minecraft_server_ping]
                         (unsigned short port)
                 {
-                    const auto response = Func(ip, port);
+                    const auto response = Func(ip, port, connection_timeout_ms, read_timeout_ms);
 
                     // add to valid servers list if server is online and not in ips_visited cache
                     if (response.online)
@@ -135,7 +136,7 @@ std::vector<minecraft_server> ip_crawl_horizontal(const std::unordered_set<std::
 
 // simulate a minecraft client server list ping.
 // retrieves information about the server and returns the info struct
-minecraft_server_tcp_info ip_tcp_minecraft_server_ping(const std::string_view ip, const unsigned short port)
+minecraft_server_tcp_info ip_tcp_minecraft_server_ping(const std::string_view ip, const unsigned short port, const size_t connection_timeout_ms , const size_t read_timeout_ms)
 {
     using boost::asio::ip::tcp;
     boost::asio::io_context io_context;
@@ -155,7 +156,7 @@ minecraft_server_tcp_info ip_tcp_minecraft_server_ping(const std::string_view ip
         tcp::resolver::results_type endpoints = resolver.resolve(ip.data(), std::to_string(port));
 
         // check if server can even accept connection
-        if (!ip_tcp_is_open(ip, port, 500))
+        if (!ip_tcp_is_open(ip, port, connection_timeout_ms))
         {
             return OFFLINE;
         }
@@ -166,7 +167,7 @@ minecraft_server_tcp_info ip_tcp_minecraft_server_ping(const std::string_view ip
 
         // set up buffer read timeout deadline timer
         boost::asio::deadline_timer timer(io_context);
-        timer.expires_from_now(boost::posix_time::milliseconds(500));
+        timer.expires_from_now(boost::posix_time::milliseconds(read_timeout_ms));
         timer.async_wait([&](const boost::system::error_code& error) {
             if (!error) {
                 // Timeout occurred, cancel the read operation
@@ -253,13 +254,6 @@ std::unordered_set<std::string> ip_neighbor_set(const ip_parts& origin_ip, const
         {
             const auto neighbor_ip = ip_neighbor(origin_ip, offset, i);
             const auto neighbor_ip_str = fmt::format("{}.{}.{}.{}", neighbor_ip.first, neighbor_ip.second, neighbor_ip.third, neighbor_ip.fourth);
-            if (!boost::regex_match(neighbor_ip_str, ip_regex))
-            {
-                // this should never happen
-                fmt::print("[WARNING] {} is not a valid ip\n", neighbor_ip_str);
-                continue; // neighbor isn't a valid ip.. ?
-            }
-
             fmt::print("\rGenerating neighborhood... ({} / {})", ips.size(), neighborhood_size);
             ips.insert(neighbor_ip_str);
         }
