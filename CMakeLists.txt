@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Boost REQUIRED COMPONENTS system regex program_options)
+find_package(fmt REQUIRED)
 
 add_executable(server-crawler
         ${PROJECT_SOURCE_DIR}/searcher/search.cpp
@@ -12,11 +13,11 @@ add_executable(server-crawler
         ${PROJECT_SOURCE_DIR}/searcher/crawler_options.cpp
 )
 target_link_libraries(server-crawler Boost::system Boost::regex Boost::program_options)
-target_link_libraries(server-crawler fmt)
+target_link_libraries(server-crawler fmt::fmt)
 
 add_executable(server-dat-creator
         ${PROJECT_SOURCE_DIR}/nbt/nbt_create.cpp
         ${PROJECT_SOURCE_DIR}/nbt/nbt_adapt.cpp
         ${PROJECT_SOURCE_DIR}/nbt/NBTWriter.cpp
 )
-target_link_libraries(server-dat-creator fmt)
+target_link_libraries(server-dat-creator fmt::fmt)

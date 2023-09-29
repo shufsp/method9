@@ -3,6 +3,7 @@
 //
 
 #include "crawler_options.h"
+#include "crawler_network.h"
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -22,7 +23,9 @@ std::optional<crawler_options> parse_crawler_options_from_argv(int argc, char* a
             ("ports",               po::value<std::string>(),  "comma-separated list of ports. optional. default is 25565")
             ("distance",            po::value<int>(),          "the amount of adjacent neighbors to visit. higher = further ips scanned. optional. default is 3")
             ("crawl-direction",     po::value<std::string>(),  "the crawl mode. options for this are: forward, backward, both. optional. default is forward.")
-            ("verbose-results",  "display all the valid servers with their MOTD and player count after scanning.");
+            ("verbose-results",  "display all the valid servers with their MOTD and player count after scanning.")
+            ("show-options", "display the crawler's configuration options before scanning.")
+            ("offset",              po::value<int>(),          "start scanning at an offset from the given origin ip. OVERRIDES ORIGIN-IP.");
 
     po::variables_map vm;
     try {
@@ -36,10 +39,12 @@ std::optional<crawler_options> parse_crawler_options_from_argv(int argc, char* a
     // set some sane defaults
     crawler_options options = {
         .verbose_results = false,
+        .show_options = false,
         .threads = 50,
         .timeout_read_ms = 1000,
         .timeout_connect_ms = 1000,
         .neighbor_distance = 3,
+        .neighbor_offset = 0,
         .origin_ip = "",
         .crawl_direction = "forward",
         .ports = { 25565 }
@@ -133,6 +138,24 @@ std::optional<crawler_options> parse_crawler_options_from_argv(int argc, char* a
     {
         options.verbose_results = true;
     }
+
+    if (vm.count("show-options"))
+    {
+        options.show_options = true;
+    }
+
+    if (vm.count("offset"))
+    {
+        const int offset = vm["offset"].as<int>();
+        if (offset > 0 && !options.origin_ip.empty())
+        {
+            options.neighbor_offset = static_cast<size_t>(offset);
+            const ip_parts origin_ip_parts = ip_str_to_parts(options.origin_ip);
+            const ip_parts offsetted_ip_parts = ip_neighbor(origin_ip_parts, offset, origin_ip_parts.fourth);
+            options.origin_ip = fmt::format("{}.{}.{}.{}", offsetted_ip_parts.first, offsetted_ip_parts.second, offsetted_ip_parts.third, offsetted_ip_parts.fourth);
+        }
+    }
+
 
     return std::make_optional<crawler_options>(options);
 }

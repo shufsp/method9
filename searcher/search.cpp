@@ -4,6 +4,7 @@
 #include <ostream>
 #include <numeric>
 #include <optional>
+#include <iostream>
 
 #include "crawler_network.h"
 #include "crawler_options.h"
@@ -18,13 +19,28 @@ int main(int argc, char** argv)
 
     const crawler_options& options = maybe_options.value();
 
+    if (options.show_options)
+        std::cout << options;
+
     // use options to set up scanner
     // create the neighbor offsets to check
     // range from 0 to `range`
     const auto ip_offsets = [&](size_t range)
     {
         std::vector<int> result(range);
-        std::iota(result.begin(), result.end(), 0);
+        result.reserve(range * 2 + 1);
+
+        const std::string& mode = options.crawl_direction;
+        if (mode == "backward")
+            std::iota(result.begin(), result.end(), -range);
+        else if (mode == "both")
+        {
+            std::iota(result.begin(), result.begin() + range, -range);
+            std::iota(result.begin() + range, result.end(), 0);
+        }
+        else
+            std::iota(result.begin(), result.end(), 0);
+
         return result;
     }(options.neighbor_distance);
 
@@ -34,7 +50,6 @@ int main(int argc, char** argv)
     // generate the ips to check with our offsets
     const auto ips = ip_neighbor_set(ip_addr, ip_offsets);
 
-    // print every port we're going to check on every ip
     // Crawl.
     const auto valid_servers = ip_crawl_horizontal(ips, options.ports, options.threads, options.timeout_connect_ms, options.timeout_read_ms);
 
