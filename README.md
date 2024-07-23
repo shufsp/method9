@@ -1,8 +1,10 @@
 # method9
-Not for public use. Barely works, not tested
+Not for public use. 
+Barely works, not tested for stability or functionality.
+For educational purposes only. **Do not use the scanner on public IPs.** Only use the scanner on your local machine.
 
-## Minecraft mass server crawler
-Scan neighboring IP addresses from a given starting point with any given range. Fast and multi-threaded. Only scans port 25565 for now.
+## Minecraft server scanner
+Given an IP, find minecraft servers from neighboring octets. 
 
 ## Minecraft mass server list adder (server.dat)
 Within the same repo I've also included a server.dat creator, which takes a .txt list of IPS (one IP per line) and turns it into a valid NBT file that minecraft can read.
@@ -65,9 +67,5 @@ cmake ..
 make
 ```
 
-You can also run the included `build.py` script with python to do the exact same as above, but automatically.
-```shell
-python build.py
-```
 ## Credit
 Thanks to ToKiNoBug's [NBT writer utility](https://github.com/ToKiNoBug/NBTWriter-of-Toki), we could easily implement the server.dat creator tool. Seriously, all the other C++ NBT libraries I tried were not as straightforward to use as this one. I'm not kidding.
