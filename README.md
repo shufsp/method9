@@ -69,3 +69,6 @@ make
 
 ## Credit
 Thanks to ToKiNoBug's [NBT writer utility](https://github.com/ToKiNoBug/NBTWriter-of-Toki), we could easily implement the server.dat creator tool. Seriously, all the other C++ NBT libraries I tried were not as straightforward to use as this one. I'm not kidding.
+
+## License
+MIT License
